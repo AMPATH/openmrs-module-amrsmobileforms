@@ -61,13 +61,14 @@ public class MobileFormEntryErrorModel extends MobileFormEntryError {
 				Document formDataDoc = getDocumentForErrorQueueItem(getFormName());
 				XPath xp = getXPathFactory().newXPath();
 
-				if ("household".equals(errorType)) {
+               if ("household".equals(errorType)) {
 					setName("Household");
 					setBirthdate("N/A");
 					setIdentifier(xp.evaluate("/form/household/meta_data/household_id", formDataDoc));
 					setGender("N/A");
 					setLocation(xp.evaluate("/form/household/meta_data/catchment_area", formDataDoc));
 					setEncounterDate(xp.evaluate("/form/meta/start_time", formDataDoc));
+
 				} else {
 					setName(xp.evaluate("/form/patient/patient.given_name", formDataDoc) + " " +
 							xp.evaluate("/form/patient/patient.middle_name", formDataDoc) + " " +
@@ -82,7 +83,6 @@ public class MobileFormEntryErrorModel extends MobileFormEntryError {
 					setLocation(location.substring(location.indexOf("^") + 1));
 					setEncounterDate(xp.evaluate("/form/encounter/encounter.encounter_datetime", formDataDoc));
 				}
-
 				setFormModelName(xp.evaluate("/form/@name", formDataDoc));
 				setFormId(xp.evaluate("/form/@version", formDataDoc));
 
@@ -182,14 +182,12 @@ public class MobileFormEntryErrorModel extends MobileFormEntryError {
 	public String getFormModelName() {
 		return formModelName;
 	}
-
 	/**
 	 * @param formModelName the formModelName to set
 	 */
 	public void setFormModelName(String formModelName) {
 		this.formModelName = formModelName;
 	}
-
 	/**
 	 * @return the formId
 	 */
