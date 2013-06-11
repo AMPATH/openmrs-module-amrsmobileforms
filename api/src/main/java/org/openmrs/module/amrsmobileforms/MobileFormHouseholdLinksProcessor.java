@@ -1,18 +1,9 @@
 package org.openmrs.module.amrsmobileforms;
 
-import java.io.File;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Patient;
-import org.openmrs.Location;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.amrsmobileforms.util.MobileFormEntryUtil;
@@ -20,6 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+import java.io.File;
 
 /**
  * Processes Patient forms by linking patients to their specified households
@@ -34,7 +32,7 @@ public class MobileFormHouseholdLinksProcessor {
 	private DocumentBuilder docBuilder;
 	private XPathFactory xPathFactory;
 	private MobileFormEntryService mobileService;
-	
+
 	// allow only one running instance
 	private static Boolean isRunning = false;
 
@@ -56,6 +54,7 @@ public class MobileFormHouseholdLinksProcessor {
 	 * @throws APIException
 	 */
 	private void processPendingLinkForm(String filePath, MobileFormQueue queue) throws APIException {
+
 		log.debug("Linking Patient to household");
         String providerId=null;
         String locationId=null;
@@ -70,9 +69,8 @@ public class MobileFormHouseholdLinksProcessor {
             Node curNode = (Node) xp.evaluate("/form/patient", doc, XPathConstants.NODE);
 			String patientIdentifier = xp.evaluate(MobileFormEntryConstants.PATIENT_IDENTIFIER, curNode);
 			String householdId = xp.evaluate(MobileFormEntryConstants.PATIENT_HOUSEHOLD_IDENTIFIER, curNode);
-            providerId = Integer.toString(MobileFormEntryUtil.getProviderId(xp.evaluate(MobileFormEntryConstants.ENCOUNTER_PROVIDER, curNode)));
 
-             //find  provider Id from the document
+            //find  provider Id from the document
             curNode=(Node)  xp.evaluate(MobileFormEntryConstants.ENCOUNTER_NODE, doc, XPathConstants.NODE);
             providerId = xp.evaluate(MobileFormEntryConstants.ENCOUNTER_PROVIDER, curNode);
             providerId=providerId.trim();
@@ -95,7 +93,7 @@ public class MobileFormHouseholdLinksProcessor {
 			if (!StringUtils.hasText(householdId) || MobileFormEntryUtil.isNewHousehold(householdId)) {
 				saveFormInError(filePath);
 				mobileService.saveErrorInDatabase(MobileFormEntryUtil.createError(getFormName(filePath), "Error linking patient",
-						"Patient is not linked to household or household Id provided is invalid",providerId, locationId));
+						"Patient is not linked to household or household Id provided is invalid", providerId, locationId));
 			} else {
 				Patient pat = MobileFormEntryUtil.getPatient(patientIdentifier);
 				MobileFormHousehold household = mobileService.getHousehold(householdId);
@@ -116,7 +114,7 @@ public class MobileFormHouseholdLinksProcessor {
 			log.error("Error while linking patient to household", t);
 			//put file in error queue
 			saveFormInError(filePath);
-			mobileService.saveErrorInDatabase(MobileFormEntryUtil.createError(getFormName(filePath), "Error while linking patient to house hold", t.getMessage(),providerId, locationId));
+			mobileService.saveErrorInDatabase(MobileFormEntryUtil.createError(getFormName(filePath), "Error while linking patient to house hold", t.getMessage(), providerId, locationId));
 		}
 	}
 
